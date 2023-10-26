@@ -17,8 +17,12 @@ int currentFrame = 0;
 int hearts = 3;
 int UFOsXPOS[3] = { -1, -1, -1 };  //-1 = no UFO, 0-15 = xPos
 //infoForBullet {0,0,0} index 0: bullet Flying? index 1: LCD number, index 2: xPos index 3: frame #
-int infoForBullet[4] = { 0, 0, 0, 0 };
-//byte values for LED display
+int infoForBullet[3][4] = {
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0}
+};
+int currentNumberOfBullets = 0;
 byte ship[8] = {
   B00000,
   B00000,
@@ -262,12 +266,10 @@ int randomNumber() {
 void classicGame(int clicked, int direction) {
   int overRideFrame = 0;
   if (clicked == 1) {
-    if (currentFrame == 0 and infoForBullet[0] == 0) {
+    if (currentFrame == 0 and currentNumberOfBullets < 3) {
       Serial.println("starting Shoot");
-      if (currentFrame == 0) {
-        currentFrame = 1;
-        overRideFrame = 1;
-      }
+      currentFrame = 1;
+      overRideFrame = 1;
     }
   }
   if (currentFrame != 0 and overRideFrame == 0) {
@@ -275,46 +277,58 @@ void classicGame(int clicked, int direction) {
   }
   if (currentFrame == 4) {
     currentFrame = 0;
-    infoForBullet[0] = 1;
-    infoForBullet[1] = 2;
-    infoForBullet[2] = shipPosition;
-    infoForBullet[3] = 0;
-  }
-  if (infoForBullet[0] == 1) {
-    Serial.println("-----Chunk START-----");
-    Serial.println(infoForBullet[0]);
-    Serial.println(infoForBullet[1]);
-    Serial.println(infoForBullet[2]);
-    Serial.println(infoForBullet[3]);
-    bulletFlyingHandling(infoForBullet[3], infoForBullet[1], infoForBullet[2]);
-    infoForBullet[3] = infoForBullet[3] + 1;
-    if (infoForBullet[3] > 7) {
-      Serial.println("Hit Limit");
-      if (infoForBullet[1] == 2) {
-        //check if UFO is in the same position as bullet
-        bool hit = false;
-        for (int i = 0; i < 3; i++) {
-          if (UFOsXPOS[i] == infoForBullet[2]) {
-            //write a space over the UFO
-            lcd.setCursor(UFOsXPOS[i], 1);
-            lcd.print(" ");
-            UFOsXPOS[i] = -1;
-            score += 1;
-            hit = true;
-          }
-        }
-        if(hit == false){
-        infoForBullet[1] = 1;//move bullet to LCD 1
-        infoForBullet[3] = 0;
-        }else{
-          Serial.println("Hit UFO");
-          infoForBullet[0] = 0;
-        }
-      } else {
-        infoForBullet[0] = 0;
+    //find the next available bullet location in array
+    for (int i = 0; i < 3; i++) {
+      if (infoForBullet[i][0] == 0) {
+        infoForBullet[i][0] = 1;
+        infoForBullet[i][1] = 2;
+        infoForBullet[i][2] = shipPosition;
+        infoForBullet[i][3] = 0;
+        currentNumberOfBullets += 1;
+        break;
       }
     }
-    Serial.println("-----Chunk END-----");
+  }
+  if (currentNumberOfBullets != 0) {
+    //Serial.println("-----Chunk START-----");
+    //Serial.println("currentNumberOfBullets:");
+    //Serial.print(currentNumberOfBullets);
+    //Serial.println(infoForBullet[0][0] + infoForBullet[1][0] + infoForBullet[2][0]);
+    for(int i = 0; i < 3; i++){
+      if(infoForBullet[i][0] == 1){
+        bulletFlyingHandling(infoForBullet[i][3], infoForBullet[i][1], infoForBullet[i][2], i);
+        infoForBullet[i][3] = infoForBullet[i][3] + 1;
+        if (infoForBullet[i][3] > 7) {
+          Serial.println("Hit Limit");
+          if (infoForBullet[i][1] == 2) {
+            //check if UFO is in the same position as bullet
+            bool hit = false;
+            for (int xx = 0; xx < 3; xx++) {
+              if (UFOsXPOS[xx] == infoForBullet[i][2]) {
+                //write a space over the UFO
+                lcd.setCursor(UFOsXPOS[xx], 1);
+                lcd.print(" ");
+                UFOsXPOS[xx] = -1;
+                score += 1;
+                hit = true;
+              }
+            }
+            if(hit == false){
+            infoForBullet[i][1] = 1;//move bullet to LCD 1
+            infoForBullet[i][3] = 0;
+            }else{
+              Serial.println("Hit UFO");
+              infoForBullet[i][0] = 0;
+              currentNumberOfBullets -= 1;
+            }
+          } else {
+            infoForBullet[i][0] = 0;
+            currentNumberOfBullets -= 1;
+          }
+        }
+      }
+    }
+    //Serial.println("-----Chunk END-----");
   }
   lcd.setCursor(0, 0);
   lcd.print("Score:");
@@ -371,29 +385,45 @@ void timeLapse(int clicked, int direction) {
   lcd.write(byte(5));
 }
 
-void bulletFlyingHandling(int FrameRequested, int lcdnumber, int xPos) {
-  Serial.println("xPos:");
-  Serial.print(xPos);
+void bulletFlyingHandling(int FrameRequested, int lcdnumber, int xPos, int bulletNumber) {
+  Serial.println("-----Bullet START-----");
+  Serial.println(FrameRequested);
+  Serial.println(lcdnumber);
+  Serial.println(xPos);
+  Serial.println(bulletNumber); 
+  Serial.println("-----Bullet END-----");
+
+  if(FrameRequested > 7 or lcdnumber > 2 or xPos > 15 or bulletNumber > 2){
+    Serial.println("ERROR");
+    //kill ardunio
+    while(true){
+      lcd.clear();
+      lcd2.clear();
+      lcd.print("ERROR");
+      lcd2.print("ERROR");
+      delay(tick);
+    }
+  }
+
+  int finalBulletNumber = 4 + (bulletNumber);
   //if FrameRequested is 7, than Clean up bullet
   if (FrameRequested == 7) {
     if (lcdnumber == 1) {
-      //lcd.setCursor(xPos, 1);
-      //lcd.print(" ");
-      lcd.clear();
+      lcd.setCursor(xPos, 1);
+      lcd.print(" ");
     } else {
-      //lcd2.setCursor(xPos, 0);
-      //lcd2.print(" ");
-      lcd2.clear();
+      lcd2.setCursor(xPos, 0);
+      lcd2.print(" ");
     }
     return;
   }
   if (lcdnumber == 1) {
-    lcd.createChar(4, bulletFlying[FrameRequested]);
+    lcd.createChar(finalBulletNumber, bulletFlying[FrameRequested]);
     lcd.setCursor(xPos, 1);
-    lcd.write(byte(4));
+    lcd.write(byte(finalBulletNumber));
   } else {
-    lcd2.createChar(4, bulletFlying[FrameRequested]);
+    lcd2.createChar(finalBulletNumber, bulletFlying[FrameRequested]);
     lcd2.setCursor(xPos, 0);
-    lcd2.write(byte(4));
+    lcd2.write(byte(finalBulletNumber));
   }
 }
