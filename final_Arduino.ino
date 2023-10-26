@@ -362,8 +362,31 @@ void classicGame(int clicked, int direction) {
           lcd2.setCursor(UFOsXPOS[i], 0);
           lcd2.print(" ");
         }
+        //check if UFO is in the same position as Ship
+        if(UFOsXPOS[i] == shipPosition){
+          lcd2.setCursor(UFOsXPOS[i], 0);
+          lcd2.print(" ");
+          hearts -= 1;
+          if(hearts == 0){
+            //end game
+            lcd.clear();
+            lcd2.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("Game Over");
+            lcd2.setCursor(0, 0);
+            lcd2.print("Game Over");
+            while(true){
+              delay(tick);
+            }
+          }
+        lcd2.setCursor(UFOsXPOS[i], 0);
+        lcd2.print(" ");
+        UFOsXPOS[i] = -1;
+        UFOsYPOS[i] = -1;          
+        }else{
         lcd2.setCursor(UFOsXPOS[i], 1);
         lcd2.write(byte(4));
+        }
       }else if(UFOsYPOS[i] == 31){
         lcd2.setCursor(UFOsXPOS[i], 1);
         lcd2.print(" ");
