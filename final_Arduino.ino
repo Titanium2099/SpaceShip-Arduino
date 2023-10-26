@@ -179,8 +179,11 @@ void loop() {
   }else if(currentScreen == 2){
     timeLapse(_joystickState.button, _joystickState.direction);
   }*/
+  if(currentScreen == 4){
+    GameOver();
+  }else{
   classicGame(_joystickState.button, _joystickState.direction);
-
+  }
   delay(tick);
 }
 
@@ -368,16 +371,8 @@ void classicGame(int clicked, int direction) {
           lcd2.print(" ");
           hearts -= 1;
           if(hearts == 0){
+            currentScreen = 4;
             //end game
-            lcd.clear();
-            lcd2.clear();
-            lcd.setCursor(0, 0);
-            lcd.print("Game Over");
-            lcd2.setCursor(0, 0);
-            lcd2.print("Game Over");
-            while(true){
-              delay(tick);
-            }
           }
         lcd2.setCursor(UFOsXPOS[i], 0);
         lcd2.print(" ");
@@ -478,4 +473,13 @@ void bulletFlyingHandling(int FrameRequested, int lcdnumber, int xPos, int bulle
     lcd2.setCursor(xPos, 0);
     lcd2.write(byte(finalBulletNumber));
   }
+}
+
+void GameOver(){
+  lcd.clear();
+  lcd2.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Game Over");
+  lcd2.setCursor(0, 0);
+  lcd2.print("Game Over");
 }
