@@ -16,6 +16,7 @@ int tick = 100;        //tick rate
 int currentFrame = 0;
 int hearts = 3;
 int UFOsXPOS[3] = { -1, -1, -1 };  //-1 = no UFO, 0-15 = xPos
+int UFOsYPOS[3] = { -1, -1, -1 };  //-1 = no UFO, 0-30 - Tick Rate
 //infoForBullet {0,0,0} index 0: bullet Flying? index 1: LCD number, index 2: xPos index 3: frame #
 int infoForBullet[3][4] = {
   {0, 0, 0, 0},
@@ -147,7 +148,7 @@ byte bulletFlying[7][8] = {
 
 
 LiquidCrystal lcd(27, 26, 25, 24, 23, 22);
-LiquidCrystal lcd2(13, 12, 11, 10, 9, 8);
+LiquidCrystal lcd2(8, 9, 10, 11, 12, 13);
 void setup() {
   Serial.begin(9600);
   pinMode(joystickButtonPin, INPUT_PULLUP);  // Set the button pin as an input with a pull-up resistor
@@ -156,11 +157,13 @@ void setup() {
   //define custom Characters for LED
   lcd.createChar(0, ufo);
   lcd.createChar(1, heart);
-
+  
   lcd2.createChar(0, ship);
   lcd2.createChar(1, shoot1);
   lcd2.createChar(2, shoot2);
   lcd2.createChar(3, shoot3);
+  lcd2.createChar(4, ufo);
+
 }
 
 void loop() {
@@ -309,6 +312,7 @@ void classicGame(int clicked, int direction) {
                 lcd.setCursor(UFOsXPOS[xx], 1);
                 lcd.print(" ");
                 UFOsXPOS[xx] = -1;
+                UFOsYPOS[xx] = -1;
                 score += 1;
                 hit = true;
               }
@@ -341,9 +345,33 @@ void classicGame(int clicked, int direction) {
   int totalUFOs = 0;
   for (int i = 0; i < 3; i++) {
     if (UFOsXPOS[i] != -1) {
+      if(UFOsYPOS[i] < 10){
       lcd.setCursor(UFOsXPOS[i], 1);
       lcd.write(byte(0));
+      }else if(UFOsYPOS[i] < 20){
+      //clean up UFO 
+      if(UFOsYPOS[i] == 10){
+      lcd.setCursor(UFOsXPOS[i], 1);
+      lcd.print(" ");
+      }
+      lcd2.setCursor(UFOsXPOS[i], 0);
+      lcd2.write(byte(4));
+      }else if(UFOsYPOS[i] < 30){
+        //clean up UFO
+        if(UFOsYPOS[i] == 20){
+          lcd2.setCursor(UFOsXPOS[i], 0);
+          lcd2.print(" ");
+        }
+        lcd2.setCursor(UFOsXPOS[i], 1);
+        lcd2.write(byte(4));
+      }else if(UFOsYPOS[i] == 31){
+        lcd2.setCursor(UFOsXPOS[i], 1);
+        lcd2.print(" ");
+        UFOsXPOS[i] = -1;
+        UFOsYPOS[i] = -1;
+      }
       totalUFOs += 1;
+      UFOsYPOS[i] += 1;//increase Tick Number
     }
   }
     // spawn new UFO
@@ -351,6 +379,7 @@ void classicGame(int clicked, int direction) {
       if (UFOsXPOS[i] == -1) {
         int randomXPOS = randomNumber();
         UFOsXPOS[i] = randomXPOS;
+        UFOsYPOS[i] = 0;
         break;
       }
     }
@@ -405,7 +434,7 @@ void bulletFlyingHandling(int FrameRequested, int lcdnumber, int xPos, int bulle
     }
   }
 
-  int finalBulletNumber = 4 + (bulletNumber);
+  int finalBulletNumber = 5 + (bulletNumber);
   //if FrameRequested is 7, than Clean up bullet
   if (FrameRequested == 7) {
     if (lcdnumber == 1) {
