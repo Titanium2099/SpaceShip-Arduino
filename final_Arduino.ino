@@ -290,7 +290,25 @@ void classicGame(int clicked, int direction) {
     currentFrame += 1;
   }
   if (currentFrame == 4) {
-    currentFrame = 0;
+    int overrideBulletMove = 0;
+    currentFrame = 0;    
+    //check if there is a UFO in the same position as the bullet
+    for (int xx = 0; xx < 3; xx++) {
+      if (UFOsXPOS[xx] == shipPosition) {
+        //check if YPOS of UFO is greater than 20 and less than 30
+        if(UFOsYPOS[xx] > 10 and UFOsYPOS[xx] < 20){
+        //write a space over the UFO
+        lcd2.setCursor(UFOsXPOS[xx], 0);
+        lcd2.print(" ");
+        UFOsXPOS[xx] = -1;
+        UFOsYPOS[xx] = -1;
+        score += 1;
+        overrideBulletMove = 1;
+        Serial.println("Hit UFO (Early)");
+        }
+      }
+    }
+    if(overrideBulletMove == 0){
     //find the next available bullet location in array
     for (int i = 0; i < 3; i++) {
       if (infoForBullet[i][0] == 0) {
@@ -301,6 +319,7 @@ void classicGame(int clicked, int direction) {
         currentNumberOfBullets += 1;
         break;
       }
+    }
     }
   }
   if (currentNumberOfBullets != 0) {
@@ -447,7 +466,7 @@ void bulletFlyingHandling(int FrameRequested, int lcdnumber, int xPos, int bulle
   Serial.println(xPos);
   Serial.println(bulletNumber); 
   Serial.println("-----Bullet END-----");
-
+  
   if(FrameRequested > 7 or lcdnumber > 2 or xPos > 15 or bulletNumber > 2){
     Serial.println("ERROR");
     //kill ardunio
@@ -498,7 +517,7 @@ void GameOver(int clicked, int direction) {
       score = 0;
       hearts = 3;
     } else if (subScreenValue == 1) {
-      currentScreen = 2;
+      currentScreen = 1;
     }
     clearScreens();
   } else {
