@@ -15,8 +15,10 @@ int shipPosition = 0;  //x coordinate of space ship
 int tick = 100;        //tick rate
 int currentFrame = 0;
 int hearts = 3;
+int TimeTick = 0;
 int UFOsXPOS[3] = { -1, -1, -1 };  //-1 = no UFO, 0-15 = xPos
 int UFOsYPOS[3] = { -1, -1, -1 };  //-1 = no UFO, 0-30 - Tick Rate
+int gameTypee = 0;                 //0 = Classic, 1 = Time Lapse
 //infoForBullet {0,0,0} index 0: bullet Flying? index 1: LCD number, index 2: xPos index 3: frame #
 int infoForBullet[3][4] = {
   {0, 0, 0, 0},
@@ -175,9 +177,7 @@ void loop() {
   if(currentScreen == 0){
     mainMenu(_joystickState.button, _joystickState.direction);
   }else if(currentScreen == 1){
-    classicGame(_joystickState.button, _joystickState.direction);
-  }else if(currentScreen == 2){
-    timeLapse(_joystickState.button, _joystickState.direction);
+    GameHandler(_joystickState.button, _joystickState.direction, gameTypee);
   }else if(currentScreen == 4){
     GameOver(_joystickState.button, _joystickState.direction);
   }else{
@@ -232,8 +232,11 @@ void mainMenu(int clicked, int direction) {
   if (clicked == 1) {
     if (subScreenValue == 0) {
       currentScreen = 1;
+      gameTypee = 0;
     } else if (subScreenValue == 1) {
-      currentScreen = 2;
+      currentScreen = 1;
+      gameTypee = 1;
+      hearts = 60; //hearts is just a timer in this game mode
     }
     clearScreens();
   } else {
@@ -277,7 +280,18 @@ int randomNumber() {
   return randomNum;
 }
 
-void classicGame(int clicked, int direction) {
+void GameHandler(int clicked, int direction, int gameType) {
+  if(gameType == 1){
+    TimeTick++;
+    if(TimeTick == 10){
+      hearts -= 1;
+      TimeTick = 0;
+    }
+    if(hearts == 0){
+      currentScreen = 4;
+      //end game
+    }
+  }
   int overRideFrame = 0;
   if (clicked == 1) {
     if (currentFrame == 0 and currentNumberOfBullets < 3) {
@@ -368,8 +382,16 @@ void classicGame(int clicked, int direction) {
   lcd.print("Score:");
   lcd.print(score);
   lcd.print(" ");
+  if(gameType == 0){
   lcd.print(hearts);
   lcd.write(byte(1));
+  }else{
+    lcd.print("Time:");
+    lcd.print(hearts);
+    if(hearts == 9){
+      lcd.print(" ");
+    }
+  }
   //UFO printing
   //check if any UFOs are in array
   int totalUFOs = 0;
@@ -396,10 +418,12 @@ void classicGame(int clicked, int direction) {
         if(UFOsXPOS[i] == shipPosition){
           lcd2.setCursor(UFOsXPOS[i], 0);
           lcd2.print(" ");
+          if(gameTypee == 0){
           hearts -= 1;
           if(hearts == 0){
             currentScreen = 4;
             //end game
+          }
           }
         lcd2.setCursor(UFOsXPOS[i], 0);
         lcd2.print(" ");
@@ -451,14 +475,6 @@ void clearScreens() {
   lcd2.clear();
 }
 
-void timeLapse(int clicked, int direction) {
-  lcd.setCursor(0, 0);
-  lcd.print("Score:");
-  lcd.print(score);
-  lcd.print(" 3");
-  lcd.write(byte(5));
-}
-
 void bulletFlyingHandling(int FrameRequested, int lcdnumber, int xPos, int bulletNumber) {
   Serial.println("-----Bullet START-----");
   Serial.println(FrameRequested);
@@ -466,7 +482,7 @@ void bulletFlyingHandling(int FrameRequested, int lcdnumber, int xPos, int bulle
   Serial.println(xPos);
   Serial.println(bulletNumber); 
   Serial.println("-----Bullet END-----");
-  
+
   if(FrameRequested > 7 or lcdnumber > 2 or xPos > 15 or bulletNumber > 2){
     Serial.println("ERROR");
     //kill ardunio
@@ -502,7 +518,6 @@ void bulletFlyingHandling(int FrameRequested, int lcdnumber, int xPos, int bulle
   }
 }
 
-
 void GameOver(int clicked, int direction) {
   lcd.clear();
   lcd2.clear();
@@ -513,11 +528,11 @@ void GameOver(int clicked, int direction) {
   lcd.print(score);
   if (clicked == 1) {
     if (subScreenValue == 0) {
-      currentScreen = 0;
+      currentScreen = 1;
       score = 0;
       hearts = 3;
     } else if (subScreenValue == 1) {
-      currentScreen = 1;
+      currentScreen = 0;
     }
     clearScreens();
   } else {
