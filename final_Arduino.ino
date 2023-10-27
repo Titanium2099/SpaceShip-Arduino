@@ -19,6 +19,7 @@ int TimeTick = 0;
 int UFOsXPOS[3] = { -1, -1, -1 };  //-1 = no UFO, 0-15 = xPos
 int UFOsYPOS[3] = { -1, -1, -1 };  //-1 = no UFO, 0-30 - Tick Rate
 int gameTypee = 0;                 //0 = Classic, 1 = Time Lapse
+int clickFix = 0;
 //infoForBullet {0,0,0} index 0: bullet Flying? index 1: LCD number, index 2: xPos index 3: frame #
 int infoForBullet[3][4] = {
   {0, 0, 0, 0},
@@ -174,6 +175,12 @@ void loop() {
   //Serial.println(_joystickState.direction);
   //lcd.print(_joystickState.button);
   //lcd.print(_joystickState.direction);
+  if(clickFix == 1){
+    if(_joystickState.button == 0){
+      Serial.println("Click Fix Override Removed");
+      clickFix = 0;
+    }
+  }
   if(currentScreen == 0){
     mainMenu(_joystickState.button, _joystickState.direction);
   }else if(currentScreen == 1){
@@ -233,6 +240,7 @@ JoystickState joystickState() {
 void GameMenu(int clicked, int direction) {
     if(clicked == 1){
       currentScreen = 0;
+      clickFix = 1;
       clearScreens();
     }else{
     lcd.clear();
@@ -248,7 +256,7 @@ void GameMenu(int clicked, int direction) {
 }
 
 void mainMenu(int clicked, int direction) {
-  if (clicked == 1) {
+  if (clicked == 1 and clickFix == 0) {
     if (subScreenValue == 0) {
       currentScreen = 1;
       gameTypee = 0;
@@ -308,6 +316,7 @@ void GameHandler(int clicked, int direction, int gameType) {
     }
     if(hearts == 0){
       currentScreen = 4;
+      clickFix = 1;
       //end game
     }
   }
@@ -441,6 +450,7 @@ void GameHandler(int clicked, int direction, int gameType) {
           hearts -= 1;
           if(hearts == 0){
             currentScreen = 4;
+            clickFix = 1;
             //end game
           }
           }
@@ -495,12 +505,12 @@ void clearScreens() {
 }
 
 void bulletFlyingHandling(int FrameRequested, int lcdnumber, int xPos, int bulletNumber) {
-  Serial.println("-----Bullet START-----");
+  /*Serial.println("-----Bullet START-----");
   Serial.println(FrameRequested);
   Serial.println(lcdnumber);
   Serial.println(xPos);
   Serial.println(bulletNumber); 
-  Serial.println("-----Bullet END-----");
+  Serial.println("-----Bullet END-----");*/
 
   if(FrameRequested > 7 or lcdnumber > 2 or xPos > 15 or bulletNumber > 2){
     Serial.println("ERROR");
@@ -545,13 +555,15 @@ void GameOver(int clicked, int direction) {
   lcd.setCursor(0, 1);
   lcd.print("Your Score:");
   lcd.print(score);
-  if (clicked == 1) {
+  if (clicked == 1 and clickFix = 0) {
     if (subScreenValue == 0) {
       currentScreen = 1;
       score = 0;
       hearts = 3;
     } else if (subScreenValue == 1) {
       currentScreen = 0;
+      score = 0;
+      hearts = 3;
     }
     clearScreens();
   } else {
