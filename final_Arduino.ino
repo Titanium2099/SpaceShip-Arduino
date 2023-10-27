@@ -3,7 +3,7 @@
 #define joyX A0
 #define joyY A1
 #define joystickButtonPin 4  // Digital pin for the joystick button
-
+#define TemperturePin A3
 struct JoystickState {
   int button;
   int direction;
@@ -170,6 +170,18 @@ void setup() {
 }
 
 void loop() {
+  int sensorValue = analogRead(TemperturePin);
+  // Convert Celsius to Fahrenheit
+  float temperatureFahrenheit = (((sensorValue / 1024.0) * 500.0 - 50.0) * 9.0 / 5.0) + 32.0 + 78.0;
+  if(temperatureFahrenheit > 100){
+    clearScreens();
+    lcd.setCursor(0, 0);
+    lcd.print("  OVERHEATING  ");
+    lcd.setCursor(0, 1);
+    lcd.print("  PLEASE WAIT  ");
+    lcd2.setCursor(0, 0);
+    lcd2.print("  TAKE A BREAK  ");
+  }else{
   JoystickState _joystickState = joystickState();
   //Serial.println(_joystickState.button);
   //Serial.println(_joystickState.direction);
@@ -201,6 +213,7 @@ void loop() {
     lcd2.print("     value.");
     lcd2.setCursor(0, 1);
     lcd2.print("  Please Reset");
+  }
   }
   delay(tick);
 }
