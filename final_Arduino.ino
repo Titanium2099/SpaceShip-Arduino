@@ -8,7 +8,7 @@ struct JoystickState {
   int button;
   int direction;
 };
-int currentScreen = 0;   // 0 = main menu, 1 = Classic, 2 = Time Lapse, 3 = Paused, 4 = End Screen
+int currentScreen = 2;   // 0 = main menu, 1 = Classic, 2 = Time Lapse, 3 = Paused, 4 = End Screen
 int subScreenValue = 0;  // 0 = Classic, 1 = Time Lapse
 int score = 0;
 int shipPosition = 0;  //x coordinate of space ship
@@ -178,7 +178,10 @@ void loop() {
     mainMenu(_joystickState.button, _joystickState.direction);
   }else if(currentScreen == 1){
     GameHandler(_joystickState.button, _joystickState.direction, gameTypee);
-  }else if(currentScreen == 4){
+  }else if(currentScreen == 2){
+    //Game Menu
+    GameMenu(_joystickState.button, _joystickState.direction);
+    }else if(currentScreen == 4){
     GameOver(_joystickState.button, _joystickState.direction);
   }else{
     lcd.clear();
@@ -227,6 +230,22 @@ JoystickState joystickState() {
   return state;
 }
 
+void GameMenu(int clicked, int direction) {
+    if(clicked == 1){
+      currentScreen = 0;
+      clearScreens();
+    }else{
+    lcd.clear();
+    lcd2.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Space Invaders ");
+    lcd.write(byte(0));
+    lcd2.setCursor(0, 0);
+    lcd2.print(" Click Joystick");
+    lcd2.setCursor(0, 1);
+    lcd2.print("    To Start");
+    }
+}
 
 void mainMenu(int clicked, int direction) {
   if (clicked == 1) {
