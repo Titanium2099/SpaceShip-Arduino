@@ -172,17 +172,25 @@ void loop() {
   //Serial.println(_joystickState.direction);
   //lcd.print(_joystickState.button);
   //lcd.print(_joystickState.direction);
-  /*if(currentScreen == 0){
+  if(currentScreen == 0){
     mainMenu(_joystickState.button, _joystickState.direction);
   }else if(currentScreen == 1){
     classicGame(_joystickState.button, _joystickState.direction);
   }else if(currentScreen == 2){
     timeLapse(_joystickState.button, _joystickState.direction);
-  }*/
-  if(currentScreen == 4){
-    GameOver();
+  }else if(currentScreen == 4){
+    GameOver(_joystickState.button, _joystickState.direction);
   }else{
-  classicGame(_joystickState.button, _joystickState.direction);
+    lcd.clear();
+    lcd2.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("  ERROR UNKOWN");
+    lcd.setCursor(0, 1);
+    lcd.print("`currentScreen`");
+    lcd2.setCursor(0, 0);
+    lcd2.print("     value.");
+    lcd2.setCursor(0, 1);
+    lcd2.print("  Please Reset");
   }
   delay(tick);
 }
@@ -475,11 +483,43 @@ void bulletFlyingHandling(int FrameRequested, int lcdnumber, int xPos, int bulle
   }
 }
 
-void GameOver(){
+
+void GameOver(int clicked, int direction) {
   lcd.clear();
   lcd2.clear();
   lcd.setCursor(0, 0);
   lcd.print("Game Over");
-  lcd2.setCursor(0, 0);
-  lcd2.print("Game Over");
+  lcd.setCursor(0, 1);
+  lcd.print("Your Score:");
+  lcd.print(score);
+  if (clicked == 1) {
+    if (subScreenValue == 0) {
+      currentScreen = 0;
+      score = 0;
+      hearts = 3;
+    } else if (subScreenValue == 1) {
+      currentScreen = 2;
+    }
+    clearScreens();
+  } else {
+    if (direction == 3) {
+      subScreenValue = 0;
+    } else if (direction == 4) {
+      subScreenValue = 1;
+    }
+    lcd2.setCursor(0, 0);
+    if (subScreenValue == 0) {
+      lcd2.print(">");
+    } else {
+      lcd2.print(" ");
+    }
+    lcd2.print("Restart");
+    lcd2.setCursor(0, 1);
+    if (subScreenValue == 1) {
+      lcd2.print(">");
+    } else {
+      lcd2.print(" ");
+    }
+    lcd2.print("Main Menu");
+  }
 }
