@@ -555,7 +555,7 @@ void GameOver(int clicked, int direction) {
   lcd.setCursor(0, 1);
   lcd.print("Your Score:");
   lcd.print(score);
-  if (clicked == 1 and clickFix = 0) {
+  if (clicked == 1 and clickFix == 0) {
     if (subScreenValue == 0) {
       currentScreen = 1;
       score = 0;
