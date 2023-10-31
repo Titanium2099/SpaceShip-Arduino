@@ -5,6 +5,7 @@
 #define joystickButtonPin 4  // Digital pin for the joystick button
 #define TemperturePin A3
 #define speakerPin 29
+#define motorPin 7
 struct JoystickState {
   int button;
   int direction;
@@ -155,6 +156,7 @@ LiquidCrystal lcd(27, 26, 25, 24, 23, 22);
 LiquidCrystal lcd2(8, 9, 10, 11, 12, 13);
 void setup() {
   Serial.begin(9600);
+  pinMode(motorPin, OUTPUT);
   pinMode(joystickButtonPin, INPUT_PULLUP);  // Set the button pin as an input with a pull-up resistor
   lcd.begin(16, 2);
   lcd2.begin(16, 2);
@@ -172,6 +174,8 @@ void setup() {
 
 void loop() {
   noTone(speakerPin);
+  digitalWrite(motorPin, LOW);
+  
   int sensorValue = analogRead(TemperturePin);
   // Convert Celsius to Fahrenheit
   float temperatureFahrenheit = (((sensorValue / 1024.0) * 500.0 - 50.0) * 9.0 / 5.0) + 32.0 + 78.0;
@@ -465,6 +469,7 @@ void GameHandler(int clicked, int direction, int gameType) {
           lcd2.print(" ");
           if(gameTypee == 0){
           hearts -= 1;
+          digitalWrite(motorPin, HIGH);
           if(hearts == 0){
             currentScreen = 4;
             clickFix = 1;
