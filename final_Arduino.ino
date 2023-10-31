@@ -4,6 +4,7 @@
 #define joyY A1
 #define joystickButtonPin 4  // Digital pin for the joystick button
 #define TemperturePin A3
+#define speakerPin 29
 struct JoystickState {
   int button;
   int direction;
@@ -170,10 +171,12 @@ void setup() {
 }
 
 void loop() {
+  noTone(speakerPin);
   int sensorValue = analogRead(TemperturePin);
   // Convert Celsius to Fahrenheit
   float temperatureFahrenheit = (((sensorValue / 1024.0) * 500.0 - 50.0) * 9.0 / 5.0) + 32.0 + 78.0;
   if(temperatureFahrenheit > 100){
+    Serial.println(temperatureFahrenheit);
     clearScreens();
     lcd.setCursor(0, 0);
     lcd.print("  OVERHEATING  ");
@@ -337,6 +340,7 @@ void GameHandler(int clicked, int direction, int gameType) {
   if (clicked == 1) {
     if (currentFrame == 0 and currentNumberOfBullets < 3) {
       Serial.println("starting Shoot");
+      tone(speakerPin, 1000);
       currentFrame = 1;
       overRideFrame = 1;
     }
